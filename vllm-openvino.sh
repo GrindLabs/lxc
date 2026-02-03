@@ -14,7 +14,6 @@ var_os="${var_os:-debian}"
 var_version="${var_version:-13}"
 var_gpu="${var_gpu:-yes}"
 PIP_EXTRA_INDEX_URL="${PIP_EXTRA_INDEX_URL:-https://download.pytorch.org/whl/cpu}"
-VLLM_TAG="${VLLM_TAG:-v0.6.3.post1}"
 
 header_info "$APP"
 variables
@@ -25,8 +24,7 @@ function install_vllm_openvino() {
   msg_info "Installing system dependencies"
   pct exec "${CTID}" -- bash -c "apt-get update -y"
   pct exec "${CTID}" -- bash -c "DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    python3 python3-full python3-venv python3.12 python3.12-venv python3.12-dev \
-    build-essential git curl ca-certificates"
+    python3 python3-full python3-venv build-essential git curl ca-certificates"
   msg_ok "Installed system dependencies"
 
   if [[ "${var_gpu}" == "yes" ]]; then
@@ -64,10 +62,9 @@ function install_vllm_openvino() {
   fi
 
   msg_info "Installing vLLM with OpenVINO backend"
-  pct exec "${CTID}" -- bash -c "python3.12 -m venv /opt/vllm-venv"
+  pct exec "${CTID}" -- bash -c "python3 -m venv /opt/vllm-venv"
   pct exec "${CTID}" -- bash -c "/opt/vllm-venv/bin/python -m pip install --upgrade pip"
   pct exec "${CTID}" -- bash -c "rm -rf /opt/vllm && git clone https://github.com/vllm-project/vllm.git /opt/vllm"
-  pct exec "${CTID}" -- bash -c "cd /opt/vllm && git checkout \"${VLLM_TAG}\""
   pct exec "${CTID}" -- bash -c "cd /opt/vllm && \
     PIP_EXTRA_INDEX_URL=${PIP_EXTRA_INDEX_URL}; \
     if [[ -f requirements-build.txt ]]; then \
@@ -79,14 +76,7 @@ function install_vllm_openvino() {
     PIP_EXTRA_INDEX_URL=${PIP_EXTRA_INDEX_URL} \
     VLLM_TARGET_DEVICE=openvino \
     /opt/vllm-venv/bin/python -m pip install -v ."
-  pct exec "${CTID}" -- bash -c "cd /opt/vllm && \
-    COMMIT=\$(git rev-parse HEAD); \
-    PYVER=\$(/opt/vllm-venv/bin/python --version 2>&1); \
-    cat <<EOF >/opt/vllm_build_info.txt
-TAG=${VLLM_TAG}
-COMMIT=\${COMMIT}
-PYTHON=\${PYVER}
-EOF"
+  pct exec "${CTID}" -- bash -c "cd /opt/vllm && git rev-parse HEAD >/opt/vllm_version.txt"
   msg_ok "Installed vLLM with OpenVINO backend"
 
   msg_info "Configuring OpenVINO runtime environment"
@@ -109,12 +99,12 @@ function update_script() {
     exit
   fi
 
-  CURRENT_TAG="$(pct exec "${CTID}" -- bash -c "grep -E '^TAG=' /opt/vllm_build_info.txt 2>/dev/null | head -n1 | cut -d= -f2-")"
+  CURRENT="$(pct exec "${CTID}" -- bash -c "cat /opt/vllm_version.txt 2>/dev/null || true")"
+  LATEST="$(pct exec "${CTID}" -- bash -c "cd /opt/vllm && git fetch -q origin main && git rev-parse origin/main")"
 
-  if [[ -z "${CURRENT_TAG}" || "${CURRENT_TAG}" != "${VLLM_TAG}" ]]; then
-    msg_info "Updating vLLM to ${VLLM_TAG}"
-    pct exec "${CTID}" -- bash -c "cd /opt/vllm && git fetch -q --tags"
-    pct exec "${CTID}" -- bash -c "cd /opt/vllm && git checkout \"${VLLM_TAG}\""
+  if [[ -z "${CURRENT}" || "${CURRENT}" != "${LATEST}" ]]; then
+    msg_info "Updating vLLM to latest main"
+    pct exec "${CTID}" -- bash -c "cd /opt/vllm && git reset --hard origin/main"
     pct exec "${CTID}" -- bash -c "cd /opt/vllm && \
       PIP_EXTRA_INDEX_URL=${PIP_EXTRA_INDEX_URL}; \
       if [[ -f requirements-build.txt ]]; then \
@@ -126,17 +116,10 @@ function update_script() {
       PIP_EXTRA_INDEX_URL=${PIP_EXTRA_INDEX_URL} \
       VLLM_TARGET_DEVICE=openvino \
       /opt/vllm-venv/bin/python -m pip install -v ."
-    pct exec "${CTID}" -- bash -c "cd /opt/vllm && \
-      COMMIT=\$(git rev-parse HEAD); \
-      PYVER=\$(/opt/vllm-venv/bin/python --version 2>&1); \
-      cat <<EOF >/opt/vllm_build_info.txt
-TAG=${VLLM_TAG}
-COMMIT=\${COMMIT}
-PYTHON=\${PYVER}
-EOF"
-    msg_ok "Updated vLLM to ${VLLM_TAG}"
+    pct exec "${CTID}" -- bash -c "cd /opt/vllm && git rev-parse HEAD >/opt/vllm_version.txt"
+    msg_ok "Updated vLLM to ${LATEST}"
   else
-    msg_ok "No update required. vLLM is already at ${CURRENT_TAG}"
+    msg_ok "No update required. vLLM is already at ${CURRENT}"
   fi
   exit
 }
