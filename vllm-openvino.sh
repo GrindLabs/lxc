@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 source <(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/misc/build.func || \
   curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/refs/heads/main/misc/build.func || \
-  curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVED/main/misc/build.func)
+  curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVED/main/misc/build.func || \
+  curl -fsSL https://git.community-scripts.org/community-scripts/ProxmoxVE/raw/branch/main/misc/build.func || \
+  curl -fsSL https://git.community-scripts.org/community-scripts/ProxmoxVED/raw/branch/main/misc/build.func)
 
 APP="vLLM-OpenVINO"
 var_tags="${var_tags:-ai}"
@@ -24,8 +26,9 @@ function configure_gpu() {
       return
     fi
     msg_info "Configuring GPU access (/dev/dri)"
-    pct set "${CTID}" -lxc.cgroup2.devices.allow "c 226:* rwm"
-    pct set "${CTID}" -lxc.mount.entry "/dev/dri dev/dri none bind,optional,create=dir"
+    pct set "${CTID}" -lxc "lxc.cgroup2.devices.allow = c 226:* rwm"
+    pct set "${CTID}" -lxc "lxc.cgroup.devices.allow = c 226:* rwm"
+    pct set "${CTID}" -lxc "lxc.mount.entry = /dev/dri dev/dri none bind,optional,create=dir"
     msg_ok "Configured GPU access"
   fi
 }
