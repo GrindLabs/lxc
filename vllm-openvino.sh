@@ -29,7 +29,10 @@ function install_vllm_openvino() {
   if [[ "${var_gpu}" == "yes" ]]; then
     msg_info "Installing Intel GPU runtime dependencies"
     pct exec "${CTID}" -- bash -c "DEBIAN_FRONTEND=noninteractive apt-get install -y \
-      ocl-icd-libopencl1 intel-opencl-icd intel-level-zero-gpu level-zero"
+      ocl-icd-libopencl1"
+    pct exec "${CTID}" -- bash -c "DEBIAN_FRONTEND=noninteractive apt-get install -y \
+      intel-opencl-icd libze1 libze-intel-gpu1" || \
+      msg_warn "Intel GPU packages not found in APT. Skipping optional GPU runtime packages."
     pct exec "${CTID}" -- bash -c "getent group render >/dev/null || groupadd -r render"
     pct exec "${CTID}" -- bash -c "getent group video >/dev/null || groupadd -r video"
     pct exec "${CTID}" -- bash -c "usermod -aG render,video root"
