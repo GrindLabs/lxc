@@ -46,7 +46,7 @@ function install_vllm_openvino() {
           NEED_UPDATE=1; \
         fi; \
       fi; \
-      if [[ \"${NEED_UPDATE}\" -eq 1 ]]; then apt-get update -y; fi"
+      if [[ \"\${NEED_UPDATE}\" -eq 1 ]]; then apt-get update -y; fi"
     msg_ok "Ensured Debian repo components"
 
     msg_info "Installing Intel GPU runtime dependencies"
