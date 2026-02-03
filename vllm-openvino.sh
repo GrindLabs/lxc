@@ -45,7 +45,11 @@ function install_vllm_openvino() {
   pct exec "${CTID}" -- bash -c "rm -rf /opt/vllm && git clone https://github.com/vllm-project/vllm.git /opt/vllm"
   pct exec "${CTID}" -- bash -c "cd /opt/vllm && \
     PIP_EXTRA_INDEX_URL=https://download.pytorch.org/whl/cpu \
-    /opt/vllm-venv/bin/python -m pip install -r requirements-build.txt --extra-index-url https://download.pytorch.org/whl/cpu"
+    if [[ -f requirements-build.txt ]]; then \
+      /opt/vllm-venv/bin/python -m pip install -r requirements-build.txt --extra-index-url https://download.pytorch.org/whl/cpu; \
+    else \
+      /opt/vllm-venv/bin/python -m pip install -r requirements/build.txt --extra-index-url https://download.pytorch.org/whl/cpu; \
+    fi"
   pct exec "${CTID}" -- bash -c "cd /opt/vllm && \
     PIP_EXTRA_INDEX_URL=https://download.pytorch.org/whl/cpu \
     VLLM_TARGET_DEVICE=openvino \
@@ -81,7 +85,11 @@ function update_script() {
     pct exec "${CTID}" -- bash -c "cd /opt/vllm && git reset --hard origin/main"
     pct exec "${CTID}" -- bash -c "cd /opt/vllm && \
       PIP_EXTRA_INDEX_URL=https://download.pytorch.org/whl/cpu \
-      /opt/vllm-venv/bin/python -m pip install -r requirements-build.txt --extra-index-url https://download.pytorch.org/whl/cpu"
+      if [[ -f requirements-build.txt ]]; then \
+        /opt/vllm-venv/bin/python -m pip install -r requirements-build.txt --extra-index-url https://download.pytorch.org/whl/cpu; \
+      else \
+        /opt/vllm-venv/bin/python -m pip install -r requirements/build.txt --extra-index-url https://download.pytorch.org/whl/cpu; \
+      fi"
     pct exec "${CTID}" -- bash -c "cd /opt/vllm && \
       PIP_EXTRA_INDEX_URL=https://download.pytorch.org/whl/cpu \
       VLLM_TARGET_DEVICE=openvino \
