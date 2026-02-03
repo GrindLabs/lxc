@@ -62,7 +62,16 @@ function install_vllm_openvino() {
   fi
 
   msg_info "Installing vLLM with OpenVINO backend"
-  pct exec "${CTID}" -- bash -c "python3 -m venv /opt/vllm-venv"
+  pct exec "${CTID}" -- bash -c "PYTHON_BIN=python3; \
+    PY_MAJ=\$(python3 -c 'import sys; print(sys.version_info.major)'); \
+    PY_MIN=\$(python3 -c 'import sys; print(sys.version_info.minor)'); \
+    if [[ \"\${PY_MAJ}\" -eq 3 && \"\${PY_MIN}\" -ge 13 ]]; then \
+      apt-get install -y python3.12 python3.12-venv python3.12-dev; \
+      PYTHON_BIN=python3.12; \
+    fi; \
+    echo \"\${PYTHON_BIN}\" >/opt/vllm_python_bin"
+  pct exec "${CTID}" -- bash -c "PYTHON_BIN=\$(cat /opt/vllm_python_bin); \
+    \"\${PYTHON_BIN}\" -m venv /opt/vllm-venv"
   pct exec "${CTID}" -- bash -c "/opt/vllm-venv/bin/python -m pip install --upgrade pip"
   pct exec "${CTID}" -- bash -c "rm -rf /opt/vllm && git clone https://github.com/vllm-project/vllm.git /opt/vllm"
   pct exec "${CTID}" -- bash -c "cd /opt/vllm && \
