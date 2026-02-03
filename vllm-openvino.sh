@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-source <(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/misc/build.func)
+source <(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/misc/build.func || \
+  curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/refs/heads/main/misc/build.func || \
+  curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVED/main/misc/build.func)
 
 APP="vLLM-OpenVINO"
 var_tags="${var_tags:-ai}"
@@ -17,9 +19,13 @@ catch_errors
 
 function configure_gpu() {
   if [[ "${var_gpu}" == "yes" ]]; then
+    if [[ ! -d /dev/dri ]]; then
+      msg_error "Host /dev/dri not found. Skipping GPU passthrough."
+      return
+    fi
     msg_info "Configuring GPU access (/dev/dri)"
-    pct set "${CTID}" -mp0 /dev/dri,mp=/dev/dri,ro=0
     pct set "${CTID}" -lxc.cgroup2.devices.allow "c 226:* rwm"
+    pct set "${CTID}" -lxc.mount.entry "/dev/dri dev/dri none bind,optional,create=dir"
     msg_ok "Configured GPU access"
   fi
 }
@@ -30,6 +36,16 @@ function install_vllm_openvino() {
   pct exec "${CTID}" -- bash -c "DEBIAN_FRONTEND=noninteractive apt-get install -y \
     python3 python3-pip python3-venv build-essential git curl ca-certificates"
   msg_ok "Installed system dependencies"
+
+  if [[ "${var_gpu}" == "yes" ]]; then
+    msg_info "Installing Intel GPU runtime dependencies"
+    pct exec "${CTID}" -- bash -c "DEBIAN_FRONTEND=noninteractive apt-get install -y \
+      ocl-icd-libopencl1 intel-opencl-icd intel-level-zero-gpu level-zero"
+    pct exec "${CTID}" -- bash -c "getent group render >/dev/null || groupadd -r render"
+    pct exec "${CTID}" -- bash -c "getent group video >/dev/null || groupadd -r video"
+    pct exec "${CTID}" -- bash -c "usermod -aG render,video root"
+    msg_ok "Installed Intel GPU runtime dependencies"
+  fi
 
   msg_info "Installing vLLM with OpenVINO backend"
   pct exec "${CTID}" -- bash -c "python3 -m pip install --upgrade pip"
