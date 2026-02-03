@@ -19,20 +19,6 @@ variables
 color
 catch_errors
 
-function configure_gpu() {
-  if [[ "${var_gpu}" == "yes" ]]; then
-    if [[ ! -d /dev/dri ]]; then
-      msg_error "Host /dev/dri not found. Skipping GPU passthrough."
-      return
-    fi
-    msg_info "Configuring GPU access (/dev/dri)"
-    pct set "${CTID}" -lxc "lxc.cgroup2.devices.allow = c 226:* rwm"
-    pct set "${CTID}" -lxc "lxc.cgroup.devices.allow = c 226:* rwm"
-    pct set "${CTID}" -lxc "lxc.mount.entry = /dev/dri dev/dri none bind,optional,create=dir"
-    msg_ok "Configured GPU access"
-  fi
-}
-
 function install_vllm_openvino() {
   msg_info "Installing system dependencies"
   pct exec "${CTID}" -- bash -c "apt-get update -y"
@@ -107,7 +93,6 @@ function update_script() {
 start
 build_container
 description
-configure_gpu
 install_vllm_openvino
 
 IP="$(pct exec "${CTID}" -- bash -c "hostname -I | awk '{print \$1}'")"
