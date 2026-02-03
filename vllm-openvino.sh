@@ -23,7 +23,7 @@ function install_vllm_openvino() {
   msg_info "Installing system dependencies"
   pct exec "${CTID}" -- bash -c "apt-get update -y"
   pct exec "${CTID}" -- bash -c "DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    python3 python3-pip python3-venv build-essential git curl ca-certificates"
+    python3 python3-full python3-venv build-essential git curl ca-certificates"
   msg_ok "Installed system dependencies"
 
   if [[ "${var_gpu}" == "yes" ]]; then
@@ -40,15 +40,16 @@ function install_vllm_openvino() {
   fi
 
   msg_info "Installing vLLM with OpenVINO backend"
-  pct exec "${CTID}" -- bash -c "python3 -m pip install --upgrade pip"
+  pct exec "${CTID}" -- bash -c "python3 -m venv /opt/vllm-venv"
+  pct exec "${CTID}" -- bash -c "/opt/vllm-venv/bin/python -m pip install --upgrade pip"
   pct exec "${CTID}" -- bash -c "rm -rf /opt/vllm && git clone https://github.com/vllm-project/vllm.git /opt/vllm"
   pct exec "${CTID}" -- bash -c "cd /opt/vllm && \
     PIP_EXTRA_INDEX_URL=https://download.pytorch.org/whl/cpu \
-    python3 -m pip install -r requirements-build.txt --extra-index-url https://download.pytorch.org/whl/cpu"
+    /opt/vllm-venv/bin/python -m pip install -r requirements-build.txt --extra-index-url https://download.pytorch.org/whl/cpu"
   pct exec "${CTID}" -- bash -c "cd /opt/vllm && \
     PIP_EXTRA_INDEX_URL=https://download.pytorch.org/whl/cpu \
     VLLM_TARGET_DEVICE=openvino \
-    python3 -m pip install -v ."
+    /opt/vllm-venv/bin/python -m pip install -v ."
   pct exec "${CTID}" -- bash -c "cd /opt/vllm && git rev-parse HEAD >/opt/vllm_version.txt"
   msg_ok "Installed vLLM with OpenVINO backend"
 
@@ -80,11 +81,11 @@ function update_script() {
     pct exec "${CTID}" -- bash -c "cd /opt/vllm && git reset --hard origin/main"
     pct exec "${CTID}" -- bash -c "cd /opt/vllm && \
       PIP_EXTRA_INDEX_URL=https://download.pytorch.org/whl/cpu \
-      python3 -m pip install -r requirements-build.txt --extra-index-url https://download.pytorch.org/whl/cpu"
+      /opt/vllm-venv/bin/python -m pip install -r requirements-build.txt --extra-index-url https://download.pytorch.org/whl/cpu"
     pct exec "${CTID}" -- bash -c "cd /opt/vllm && \
       PIP_EXTRA_INDEX_URL=https://download.pytorch.org/whl/cpu \
       VLLM_TARGET_DEVICE=openvino \
-      python3 -m pip install -v ."
+      /opt/vllm-venv/bin/python -m pip install -v ."
     pct exec "${CTID}" -- bash -c "cd /opt/vllm && git rev-parse HEAD >/opt/vllm_version.txt"
     msg_ok "Updated vLLM to ${LATEST}"
   else
