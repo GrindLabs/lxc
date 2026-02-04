@@ -51,6 +51,16 @@ export VLLM_TARGET_DEVICE=openvino
 export PIP_EXTRA_INDEX_URL=${PIP_EXTRA_INDEX_URL}
 EOF"
   pct exec "${CTID}" -- bash -c "chmod 644 /etc/profile.d/vllm-openvino.sh"
+  msg_info "Enabling root console autologin"
+  pct exec "${CTID}" -- bash -c "passwd -d root >/dev/null 2>&1 || true"
+  pct exec "${CTID}" -- bash -c "mkdir -p /etc/systemd/system/getty@tty1.service.d"
+  pct exec "${CTID}" -- bash -c "cat <<'EOF' >/etc/systemd/system/getty@tty1.service.d/override.conf
+[Service]
+ExecStart=
+ExecStart=-/sbin/agetty --autologin root --noclear %I \$TERM
+EOF"
+  pct exec "${CTID}" -- bash -c "systemctl daemon-reload && systemctl restart getty@tty1"
+  msg_ok "Root console autologin enabled"
   msg_ok "Installed vLLM OpenVINO"
 }
 
