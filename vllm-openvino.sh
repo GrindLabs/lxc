@@ -34,13 +34,13 @@ function install_vllm_openvino() {
     else \
       msg_warn \"No Intel GPU runtime packages available in APT.\"; \
     fi"
-  pct exec "${CTID}" -- bash -c "python3 -m pip install --upgrade pip"
-  pct exec "${CTID}" -- bash -c "python3 -m pip install --upgrade 'triton<3'"
+  pct exec "${CTID}" -- bash -c "python3 -m pip install --break-system-packages --upgrade pip"
+  pct exec "${CTID}" -- bash -c "python3 -m pip install --break-system-packages --upgrade 'triton<3'"
   pct exec "${CTID}" -- bash -c "rm -rf /opt/vllm-openvino && git clone https://github.com/vllm-project/vllm-openvino.git /opt/vllm-openvino"
   pct exec "${CTID}" -- bash -c "cd /opt/vllm-openvino && \
     PIP_EXTRA_INDEX_URL=${PIP_EXTRA_INDEX_URL} \
     VLLM_TARGET_DEVICE=openvino \
-    python3 -m pip install -v ."
+    python3 -m pip install --break-system-packages -v ."
   pct exec "${CTID}" -- bash -c "cat <<'EOF' >/etc/profile.d/vllm-openvino.sh
 export VLLM_OPENVINO_DEVICE=GPU
 export VLLM_OPENVINO_ENABLE_QUANTIZED_WEIGHTS=ON
@@ -87,13 +87,13 @@ function update_script() {
     else \
       msg_warn \"No Intel GPU runtime packages available in APT.\"; \
     fi"
-  pct exec "${CTID}" -- bash -c "python3 -m pip install --upgrade pip"
-  pct exec "${CTID}" -- bash -c "python3 -m pip install --upgrade 'triton<3'"
+  pct exec "${CTID}" -- bash -c "python3 -m pip install --break-system-packages --upgrade pip"
+  pct exec "${CTID}" -- bash -c "python3 -m pip install --break-system-packages --upgrade 'triton<3'"
   pct exec "${CTID}" -- bash -c "cd /opt/vllm-openvino && git pull --ff-only"
   pct exec "${CTID}" -- bash -c "cd /opt/vllm-openvino && \
     PIP_EXTRA_INDEX_URL=${PIP_EXTRA_INDEX_URL} \
     VLLM_TARGET_DEVICE=openvino \
-    python3 -m pip install -v ."
+    python3 -m pip install --break-system-packages -v ."
   msg_ok "Updated vLLM OpenVINO"
   exit
 }
