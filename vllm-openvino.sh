@@ -24,7 +24,7 @@ function install_vllm_openvino() {
   msg_info "Installing vLLM OpenVINO"
   pct exec "${CTID}" -- bash -c "apt-get update -y"
   pct exec "${CTID}" -- bash -c "DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    python3 python3-venv git curl ca-certificates build-essential"
+    python3 python3-pip git curl ca-certificates build-essential"
   pct exec "${CTID}" -- bash -c "GPU_PKGS=\"\"; \
     for P in ocl-icd-libopencl1 intel-opencl-icd libze1 libze-intel-gpu1 intel-compute-runtime; do \
       if apt-cache show \"\${P}\" >/dev/null 2>&1; then GPU_PKGS=\"\${GPU_PKGS} \${P}\"; fi; \
@@ -34,13 +34,13 @@ function install_vllm_openvino() {
     else \
       msg_warn \"No Intel GPU runtime packages available in APT.\"; \
     fi"
-  pct exec "${CTID}" -- bash -c "python3 -m venv /opt/vllm-venv"
-  pct exec "${CTID}" -- bash -c "/opt/vllm-venv/bin/python -m pip install --upgrade pip"
+  pct exec "${CTID}" -- bash -c "python3 -m pip install --upgrade pip"
+  pct exec "${CTID}" -- bash -c "python3 -m pip install --upgrade 'triton<3'"
   pct exec "${CTID}" -- bash -c "rm -rf /opt/vllm-openvino && git clone https://github.com/vllm-project/vllm-openvino.git /opt/vllm-openvino"
   pct exec "${CTID}" -- bash -c "cd /opt/vllm-openvino && \
     PIP_EXTRA_INDEX_URL=${PIP_EXTRA_INDEX_URL} \
     VLLM_TARGET_DEVICE=openvino \
-    /opt/vllm-venv/bin/python -m pip install -v ."
+    python3 -m pip install -v ."
   pct exec "${CTID}" -- bash -c "cat <<'EOF' >/etc/profile.d/vllm-openvino.sh
 export VLLM_OPENVINO_DEVICE=GPU
 export VLLM_OPENVINO_ENABLE_QUANTIZED_WEIGHTS=ON
@@ -77,7 +77,7 @@ function update_script() {
   msg_info "Updating vLLM OpenVINO"
   pct exec "${CTID}" -- bash -c "apt-get update -y"
   pct exec "${CTID}" -- bash -c "DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    python3 python3-venv git curl ca-certificates build-essential"
+    python3 python3-pip git curl ca-certificates build-essential"
   pct exec "${CTID}" -- bash -c "GPU_PKGS=\"\"; \
     for P in ocl-icd-libopencl1 intel-opencl-icd libze1 libze-intel-gpu1 intel-compute-runtime; do \
       if apt-cache show \"\${P}\" >/dev/null 2>&1; then GPU_PKGS=\"\${GPU_PKGS} \${P}\"; fi; \
@@ -87,12 +87,13 @@ function update_script() {
     else \
       msg_warn \"No Intel GPU runtime packages available in APT.\"; \
     fi"
-  pct exec "${CTID}" -- bash -c "/opt/vllm-venv/bin/python -m pip install --upgrade pip"
+  pct exec "${CTID}" -- bash -c "python3 -m pip install --upgrade pip"
+  pct exec "${CTID}" -- bash -c "python3 -m pip install --upgrade 'triton<3'"
   pct exec "${CTID}" -- bash -c "cd /opt/vllm-openvino && git pull --ff-only"
   pct exec "${CTID}" -- bash -c "cd /opt/vllm-openvino && \
     PIP_EXTRA_INDEX_URL=${PIP_EXTRA_INDEX_URL} \
     VLLM_TARGET_DEVICE=openvino \
-    /opt/vllm-venv/bin/python -m pip install -v ."
+    python3 -m pip install -v ."
   msg_ok "Updated vLLM OpenVINO"
   exit
 }
