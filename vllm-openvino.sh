@@ -20,46 +20,61 @@ variables
 color
 catch_errors
 
+function install_vllm_openvino() {
+  msg_info "Installing vLLM OpenVINO"
+  pct exec "${CTID}" -- bash -c "apt-get update -y"
+  pct exec "${CTID}" -- bash -c "DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    python3 python3-venv git curl ca-certificates build-essential \
+    ocl-icd-libopencl1 intel-opencl-icd intel-level-zero-gpu level-zero"
+  pct exec "${CTID}" -- bash -c "python3 -m venv /opt/vllm-venv"
+  pct exec "${CTID}" -- bash -c "/opt/vllm-venv/bin/python -m pip install --upgrade pip"
+  pct exec "${CTID}" -- bash -c "rm -rf /opt/vllm-openvino && git clone https://github.com/vllm-project/vllm-openvino.git /opt/vllm-openvino"
+  pct exec "${CTID}" -- bash -c "cd /opt/vllm-openvino && \
+    PIP_EXTRA_INDEX_URL=${PIP_EXTRA_INDEX_URL} \
+    VLLM_TARGET_DEVICE=openvino \
+    /opt/vllm-venv/bin/python -m pip install -v ."
+  pct exec "${CTID}" -- bash -c "cat <<'EOF' >/etc/profile.d/vllm-openvino.sh
+export VLLM_OPENVINO_DEVICE=GPU
+export VLLM_OPENVINO_ENABLE_QUANTIZED_WEIGHTS=ON
+export VLLM_USE_V1=1
+export VLLM_OPENVINO_KVCACHE_SPACE=8
+export VLLM_OPENVINO_KV_CACHE_PRECISION=i8
+export VLLM_TARGET_DEVICE=openvino
+export PIP_EXTRA_INDEX_URL=${PIP_EXTRA_INDEX_URL}
+EOF"
+  pct exec "${CTID}" -- bash -c "chmod 644 /etc/profile.d/vllm-openvino.sh"
+  msg_ok "Installed vLLM OpenVINO"
+}
+
 function update_script() {
-    header_info
-    check_container_storage
-    check_container_resources
+  header_info
+  check_container_storage
+  check_container_resources
 
-    # Setup environment variables
-    export VLLM_OPENVINO_DEVICE=GPU
-    export VLLM_OPENVINO_ENABLE_QUANTIZED_WEIGHTS=ON
-    export VLLM_USE_V1=1
-    export VLLM_OPENVINO_KVCACHE_SPACE=8
-    export VLLM_OPENVINO_KV_CACHE_PRECISION=i8
-    export VLLM_TARGET_DEVICE=openvino
-    export PIP_EXTRA_INDEX_URL="https://download.pytorch.org/whl/cpu"
+  if ! pct exec "${CTID}" -- test -d /opt/vllm-openvino; then
+    msg_error "No vLLM OpenVINO installation found!"
+    exit
+  fi
 
-    # Update and install base dependencies
-    apt-get update -y
-    apt-get install -y python3 git curl ca-certificates build-essential ocl-icd-libopencl1 intel-opencl-icd intel-level-zero-gpu level-zero
-
-    # Update pip
-    pip install --upgrade pip
-
-    # Change to app directory
-    cd /opt
-
-    # Clone openvino repository
-    git clone https://github.com/vllm-project/vllm-openvino.git
-    cd vllm-openvino
-
-    # Install vLLM OpenVINO
-    python -m pip install -v .
-
-    # After installation it is necessary to remove triton lib
-    # Reference: https://github.com/vllm-project/vllm-openvino?tab=readme-ov-file#build-wheel-from-source
-    # pip uninstall -y triton
+  msg_info "Updating vLLM OpenVINO"
+  pct exec "${CTID}" -- bash -c "apt-get update -y"
+  pct exec "${CTID}" -- bash -c "DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    python3 python3-venv git curl ca-certificates build-essential \
+    ocl-icd-libopencl1 intel-opencl-icd intel-level-zero-gpu level-zero"
+  pct exec "${CTID}" -- bash -c "/opt/vllm-venv/bin/python -m pip install --upgrade pip"
+  pct exec "${CTID}" -- bash -c "cd /opt/vllm-openvino && git pull --ff-only"
+  pct exec "${CTID}" -- bash -c "cd /opt/vllm-openvino && \
+    PIP_EXTRA_INDEX_URL=${PIP_EXTRA_INDEX_URL} \
+    VLLM_TARGET_DEVICE=openvino \
+    /opt/vllm-venv/bin/python -m pip install -v ."
+  msg_ok "Updated vLLM OpenVINO"
+  exit
 }
 
 start
 build_container
 description
-update_script
+install_vllm_openvino
 
 msg_ok "Completed successfully!\n"
 echo -e "${CREATING}${GN}${APP} setup has been successfully initialized!${CL}"
