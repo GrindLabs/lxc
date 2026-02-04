@@ -94,4 +94,9 @@ install_vllm_openvino
 
 msg_ok "Completed successfully!\n"
 echo -e "${CREATING}${GN}${APP} setup has been successfully initialized!${CL}"
-echo -e "${INFO}${YW} Container IP:${CL}"
+CONTAINER_IP=$(pct exec "${CTID}" -- bash -c "hostname -I | awk '{print \$1}'")
+if [[ -n "${CONTAINER_IP}" ]]; then
+  echo -e "${INFO}${YW} Container IP: ${CONTAINER_IP}${CL}"
+else
+  echo -e "${INFO}${YW} Container IP: unavailable${CL}"
+fi
