@@ -24,8 +24,16 @@ function install_vllm_openvino() {
   msg_info "Installing vLLM OpenVINO"
   pct exec "${CTID}" -- bash -c "apt-get update -y"
   pct exec "${CTID}" -- bash -c "DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    python3 python3-venv git curl ca-certificates build-essential \
-    ocl-icd-libopencl1 intel-opencl-icd intel-compute-runtime libze1 libze-intel-gpu1"
+    python3 python3-venv git curl ca-certificates build-essential"
+  pct exec "${CTID}" -- bash -c "GPU_PKGS=\"\"; \
+    for P in ocl-icd-libopencl1 intel-opencl-icd libze1 libze-intel-gpu1 intel-compute-runtime; do \
+      if apt-cache show \"\${P}\" >/dev/null 2>&1; then GPU_PKGS=\"\${GPU_PKGS} \${P}\"; fi; \
+    done; \
+    if [[ -n \"\${GPU_PKGS}\" ]]; then \
+      DEBIAN_FRONTEND=noninteractive apt-get install -y \${GPU_PKGS}; \
+    else \
+      msg_warn \"No Intel GPU runtime packages available in APT.\"; \
+    fi"
   pct exec "${CTID}" -- bash -c "python3 -m venv /opt/vllm-venv"
   pct exec "${CTID}" -- bash -c "/opt/vllm-venv/bin/python -m pip install --upgrade pip"
   pct exec "${CTID}" -- bash -c "rm -rf /opt/vllm-openvino && git clone https://github.com/vllm-project/vllm-openvino.git /opt/vllm-openvino"
@@ -59,8 +67,16 @@ function update_script() {
   msg_info "Updating vLLM OpenVINO"
   pct exec "${CTID}" -- bash -c "apt-get update -y"
   pct exec "${CTID}" -- bash -c "DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    python3 python3-venv git curl ca-certificates build-essential \
-    ocl-icd-libopencl1 intel-opencl-icd intel-compute-runtime libze1 libze-intel-gpu1"
+    python3 python3-venv git curl ca-certificates build-essential"
+  pct exec "${CTID}" -- bash -c "GPU_PKGS=\"\"; \
+    for P in ocl-icd-libopencl1 intel-opencl-icd libze1 libze-intel-gpu1 intel-compute-runtime; do \
+      if apt-cache show \"\${P}\" >/dev/null 2>&1; then GPU_PKGS=\"\${GPU_PKGS} \${P}\"; fi; \
+    done; \
+    if [[ -n \"\${GPU_PKGS}\" ]]; then \
+      DEBIAN_FRONTEND=noninteractive apt-get install -y \${GPU_PKGS}; \
+    else \
+      msg_warn \"No Intel GPU runtime packages available in APT.\"; \
+    fi"
   pct exec "${CTID}" -- bash -c "/opt/vllm-venv/bin/python -m pip install --upgrade pip"
   pct exec "${CTID}" -- bash -c "cd /opt/vllm-openvino && git pull --ff-only"
   pct exec "${CTID}" -- bash -c "cd /opt/vllm-openvino && \
