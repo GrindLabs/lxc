@@ -59,6 +59,7 @@ function update_script() {
 start
 build_container
 description
+update_script
 
 msg_ok "Completed successfully!\n"
 echo -e "${CREATING}${GN}${APP} setup has been successfully initialized!${CL}"
