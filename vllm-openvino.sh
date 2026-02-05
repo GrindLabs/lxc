@@ -56,14 +56,14 @@ function install_vllm_openvino() {
   pct exec "${CTID}" -- bash -c "mkdir -p /tmp/neo && cd /tmp/neo && \
     wget https://github.com/intel/intel-graphics-compiler/releases/download/v2.27.10/intel-igc-core-2_2.27.10+20617_amd64.deb && \
     wget https://github.com/intel/intel-graphics-compiler/releases/download/v2.27.10/intel-igc-opencl-2_2.27.10+20617_amd64.deb && \
-    wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/intel-ocloc-dbgsym_26.01.36711.4-0_amd64.deb && \
+    wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/intel-ocloc-dbgsym_26.01.36711.4-0_amd64.ddeb && \
     wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/intel-ocloc_26.01.36711.4-0_amd64.deb && \
-    wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/intel-opencl-icd-dbgsym_26.01.36711.4-0_amd64.deb && \
+    wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/intel-opencl-icd-dbgsym_26.01.36711.4-0_amd64.ddeb && \
     wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/intel-opencl-icd_26.01.36711.4-0_amd64.deb && \
     wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/libigdgmm12_22.9.0_amd64.deb && \
-    wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/libze-intel-gpu1-dbgsym_26.01.36711.4-0_amd64.deb && \
+    wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/libze-intel-gpu1-dbgsym_26.01.36711.4-0_amd64.ddeb && \
     wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/libze-intel-gpu1_26.01.36711.4-0_amd64.deb && \
-    dpkg -i *.deb"
+    dpkg -i *.deb *.ddeb"
   pct exec "${CTID}" -- bash -c "apt-get install -y \
     intel-igc-core intel-igc-opencl intel-ocloc intel-opencl-icd libigdgmm12 libze-intel-gpu1"
   msg_ok "Installed vLLM OpenVINO dependencies"
@@ -157,15 +157,14 @@ function update_script() {
   pct exec "${CTID}" -- bash -c "mkdir -p /tmp/neo && cd /tmp/neo && \
     wget https://github.com/intel/intel-graphics-compiler/releases/download/v2.27.10/intel-igc-core-2_2.27.10+20617_amd64.deb && \
     wget https://github.com/intel/intel-graphics-compiler/releases/download/v2.27.10/intel-igc-opencl-2_2.27.10+20617_amd64.deb && \
-    # NOTE: not working 404 status code
-    # wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/intel-ocloc-dbgsym_26.01.36711.4-0_amd64.deb && \
+    wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/intel-ocloc-dbgsym_26.01.36711.4-0_amd64.ddeb && \
     wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/intel-ocloc_26.01.36711.4-0_amd64.deb && \
-    wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/intel-opencl-icd-dbgsym_26.01.36711.4-0_amd64.deb && \
+    wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/intel-opencl-icd-dbgsym_26.01.36711.4-0_amd64.ddeb && \
     wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/intel-opencl-icd_26.01.36711.4-0_amd64.deb && \
     wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/libigdgmm12_22.9.0_amd64.deb && \
-    wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/libze-intel-gpu1-dbgsym_26.01.36711.4-0_amd64.deb && \
+    wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/libze-intel-gpu1-dbgsym_26.01.36711.4-0_amd64.ddeb && \
     wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/libze-intel-gpu1_26.01.36711.4-0_amd64.deb && \
-    dpkg -i *.deb"
+    dpkg -i *.deb *.ddeb"
   pct exec "${CTID}" -- bash -c "apt-get install -y \
     intel-igc-core intel-igc-opencl intel-ocloc intel-opencl-icd libigdgmm12 libze-intel-gpu1"
   msg_ok "Updated vLLM OpenVINO dependencies"
