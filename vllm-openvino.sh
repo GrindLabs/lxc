@@ -157,7 +157,8 @@ function update_script() {
   pct exec "${CTID}" -- bash -c "mkdir -p /tmp/neo && cd /tmp/neo && \
     wget https://github.com/intel/intel-graphics-compiler/releases/download/v2.27.10/intel-igc-core-2_2.27.10+20617_amd64.deb && \
     wget https://github.com/intel/intel-graphics-compiler/releases/download/v2.27.10/intel-igc-opencl-2_2.27.10+20617_amd64.deb && \
-    wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/intel-ocloc-dbgsym_26.01.36711.4-0_amd64.deb && \
+    # NOTE: not working 404 status code
+    # wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/intel-ocloc-dbgsym_26.01.36711.4-0_amd64.deb && \
     wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/intel-ocloc_26.01.36711.4-0_amd64.deb && \
     wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/intel-opencl-icd-dbgsym_26.01.36711.4-0_amd64.deb && \
     wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/intel-opencl-icd_26.01.36711.4-0_amd64.deb && \
