@@ -53,16 +53,20 @@ function install_vllm_openvino() {
   pct exec "${CTID}" -- bash -c "apt-get install -y \
     libigc-dev intel-igc-cm libigdfcl-dev libigfxcmrt-dev level-zero-dev"
   pct exec "${CTID}" -- bash -c "apt-get install -y ocl-icd-libopencl1"
-  pct exec "${CTID}" -- bash -c "mkdir -p /tmp/neo && cd /tmp/neo && \
-    wget https://github.com/intel/intel-graphics-compiler/releases/download/v2.27.10/intel-igc-core-2_2.27.10+20617_amd64.deb && \
-    wget https://github.com/intel/intel-graphics-compiler/releases/download/v2.27.10/intel-igc-opencl-2_2.27.10+20617_amd64.deb && \
-    wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/intel-ocloc_26.01.36711.4-0_amd64.deb && \
-    wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/intel-opencl-icd_26.01.36711.4-0_amd64.deb && \
-    wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/libigdgmm12_22.9.0_amd64.deb && \
-    wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/libze-intel-gpu1_26.01.36711.4-0_amd64.deb && \
-    dpkg -i *.deb || apt-get install -y --fix-broken"
-  pct exec "${CTID}" -- bash -c "apt-get install -y \
-    intel-igc-core intel-igc-opencl intel-ocloc intel-opencl-icd libigdgmm12 libze-intel-gpu1"
+  pct exec "${CTID}" -- bash -c ". /etc/os-release; \
+    if [[ \"\${VERSION_CODENAME}\" == \"noble\" ]]; then \
+      mkdir -p /tmp/neo && cd /tmp/neo && \
+      wget https://github.com/intel/intel-graphics-compiler/releases/download/v2.27.10/intel-igc-core-2_2.27.10+20617_amd64.deb && \
+      wget https://github.com/intel/intel-graphics-compiler/releases/download/v2.27.10/intel-igc-opencl-2_2.27.10+20617_amd64.deb && \
+      wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/intel-ocloc_26.01.36711.4-0_amd64.deb && \
+      wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/intel-opencl-icd_26.01.36711.4-0_amd64.deb && \
+      wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/libigdgmm12_22.9.0_amd64.deb && \
+      wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/libze-intel-gpu1_26.01.36711.4-0_amd64.deb && \
+      dpkg -i *.deb || apt-get install -y --fix-broken; \
+      apt-get install -y intel-igc-core intel-igc-opencl intel-ocloc intel-opencl-icd libigdgmm12 libze-intel-gpu1; \
+    else \
+      echo \"Skipping Intel compute runtime .deb installs on \${VERSION_CODENAME}.\"; \
+    fi"
   msg_ok "Installed vLLM OpenVINO dependencies"
 
   msg_info "Installing vLLM OpenVINO"
@@ -151,16 +155,20 @@ function update_script() {
   pct exec "${CTID}" -- bash -c "apt-get install -y \
     libigc-dev intel-igc-cm libigdfcl-dev libigfxcmrt-dev level-zero-dev"
   pct exec "${CTID}" -- bash -c "apt-get install -y ocl-icd-libopencl1"
-  pct exec "${CTID}" -- bash -c "mkdir -p /tmp/neo && cd /tmp/neo && \
-    wget https://github.com/intel/intel-graphics-compiler/releases/download/v2.27.10/intel-igc-core-2_2.27.10+20617_amd64.deb && \
-    wget https://github.com/intel/intel-graphics-compiler/releases/download/v2.27.10/intel-igc-opencl-2_2.27.10+20617_amd64.deb && \
-    wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/intel-ocloc_26.01.36711.4-0_amd64.deb && \
-    wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/intel-opencl-icd_26.01.36711.4-0_amd64.deb && \
-    wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/libigdgmm12_22.9.0_amd64.deb && \
-    wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/libze-intel-gpu1_26.01.36711.4-0_amd64.deb && \
-    dpkg -i *.deb || apt-get install -y --fix-broken"
-  pct exec "${CTID}" -- bash -c "apt-get install -y \
-    intel-igc-core intel-igc-opencl intel-ocloc intel-opencl-icd libigdgmm12 libze-intel-gpu1"
+  pct exec "${CTID}" -- bash -c ". /etc/os-release; \
+    if [[ \"\${VERSION_CODENAME}\" == \"noble\" ]]; then \
+      mkdir -p /tmp/neo && cd /tmp/neo && \
+      wget https://github.com/intel/intel-graphics-compiler/releases/download/v2.27.10/intel-igc-core-2_2.27.10+20617_amd64.deb && \
+      wget https://github.com/intel/intel-graphics-compiler/releases/download/v2.27.10/intel-igc-opencl-2_2.27.10+20617_amd64.deb && \
+      wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/intel-ocloc_26.01.36711.4-0_amd64.deb && \
+      wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/intel-opencl-icd_26.01.36711.4-0_amd64.deb && \
+      wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/libigdgmm12_22.9.0_amd64.deb && \
+      wget https://github.com/intel/compute-runtime/releases/download/26.01.36711.4/libze-intel-gpu1_26.01.36711.4-0_amd64.deb && \
+      dpkg -i *.deb || apt-get install -y --fix-broken; \
+      apt-get install -y intel-igc-core intel-igc-opencl intel-ocloc intel-opencl-icd libigdgmm12 libze-intel-gpu1; \
+    else \
+      echo \"Skipping Intel compute runtime .deb installs on \${VERSION_CODENAME}.\"; \
+    fi"
   msg_ok "Updated vLLM OpenVINO dependencies"
 
   msg_info "Updating vLLM OpenVINO"
