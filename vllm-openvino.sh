@@ -27,16 +27,16 @@ function install_vllm_openvino() {
 
   msg_info "Installing vLLM OpenVINO dependencies"
   pct exec "${CTID}" -- bash -c "wget -qO - https://repositories.intel.com/gpu/intel-graphics.key | gpg --yes --dearmor --output /usr/share/keyrings/intel-graphics.gpg"
-  pct exec "${CTID}" -- bash -c ". /etc/os-release; \
-    if [[ ! " jammy " =~ " \${VERSION_CODENAME} " ]]; then \
-      echo "Ubuntu version \${VERSION_CODENAME} not supported"; \
+  pct exec "${CTID}" -- bash -c '. /etc/os-release; \
+    if [[ ! " jammy " =~ " ${VERSION_CODENAME} " ]]; then \
+      echo "Ubuntu version ${VERSION_CODENAME} not supported"; \
     else \
       wget -qO - https://repositories.intel.com/gpu/intel-graphics.key | \
       gpg --yes --dearmor --output /usr/share/keyrings/intel-graphics.gpg; \
-      echo "deb [arch=amd64 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/gpu/ubuntu \${VERSION_CODENAME}/lts/2350 unified" | \
-      tee /etc/apt/sources.list.d/intel-gpu-\${VERSION_CODENAME}.list; \
+      echo "deb [arch=amd64 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/gpu/ubuntu ${VERSION_CODENAME}/lts/2350 unified" | \
+      tee /etc/apt/sources.list.d/intel-gpu-${VERSION_CODENAME}.list; \
       apt-get update; \
-    fi"
+    fi'
   pct exec "${CTID}" -- bash -c "apt-get install -y \
     linux-headers-\$(uname -r) \
     linux-modules-extra-\$(uname -r) \
@@ -126,16 +126,16 @@ function update_script() {
 
   msg_info "Updating vLLM OpenVINO dependencies"
   pct exec "${CTID}" -- bash -c "wget -qO - https://repositories.intel.com/gpu/intel-graphics.key | gpg --yes --dearmor --output /usr/share/keyrings/intel-graphics.gpg"
-  pct exec "${CTID}" -- bash -c ". /etc/os-release; \
-    if [[ ! " jammy " =~ " \${VERSION_CODENAME} " ]]; then \
-      echo \"Ubuntu version \${VERSION_CODENAME} not supported\"; \
+  pct exec "${CTID}" -- bash -c '. /etc/os-release; \
+    if [[ ! " jammy " =~ " ${VERSION_CODENAME} " ]]; then \
+      echo "Ubuntu version ${VERSION_CODENAME} not supported"; \
     else \
       wget -qO - https://repositories.intel.com/gpu/intel-graphics.key | \
       gpg --yes --dearmor --output /usr/share/keyrings/intel-graphics.gpg; \
-      echo \"deb [arch=amd64 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/gpu/ubuntu \${VERSION_CODENAME}/lts/2350 unified\" | \
-      tee /etc/apt/sources.list.d/intel-gpu-\${VERSION_CODENAME}.list; \
+      echo "deb [arch=amd64 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/gpu/ubuntu ${VERSION_CODENAME}/lts/2350 unified" | \
+      tee /etc/apt/sources.list.d/intel-gpu-${VERSION_CODENAME}.list; \
       apt-get update; \
-    fi"
+    fi'
   pct exec "${CTID}" -- bash -c "apt-get install -y \
     linux-headers-\$(uname -r) \
     linux-modules-extra-\$(uname -r) \
