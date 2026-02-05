@@ -37,11 +37,13 @@ function install_vllm_openvino() {
       tee /etc/apt/sources.list.d/intel-gpu-${VERSION_CODENAME}.list; \
       apt-get update; \
     fi'
-  pct exec "${CTID}" -- bash -c "apt-get install -y \
+  pct exec "${CTID}" -- bash -c "if ! apt-get install -y \
     linux-headers-\$(uname -r) \
     linux-modules-extra-\$(uname -r) \
     flex bison \
-    intel-fw-gpu intel-i915-dkms xpu-smi"
+    intel-fw-gpu intel-i915-dkms xpu-smi; then \
+      echo \"Skipping kernel header modules (not available for \$(uname -r)).\"; \
+    fi"
   pct exec "${CTID}" -- bash -c "apt-get install -y \
     intel-opencl-icd intel-level-zero-gpu level-zero \
     intel-media-va-driver-non-free libmfxgen1 libvpl2 \
@@ -136,11 +138,13 @@ function update_script() {
       tee /etc/apt/sources.list.d/intel-gpu-${VERSION_CODENAME}.list; \
       apt-get update; \
     fi'
-  pct exec "${CTID}" -- bash -c "apt-get install -y \
+  pct exec "${CTID}" -- bash -c "if ! apt-get install -y \
     linux-headers-\$(uname -r) \
     linux-modules-extra-\$(uname -r) \
     flex bison \
-    intel-fw-gpu intel-i915-dkms xpu-smi"
+    intel-fw-gpu intel-i915-dkms xpu-smi; then \
+      echo \"Skipping kernel header modules (not available for \$(uname -r)).\"; \
+    fi"
   pct exec "${CTID}" -- bash -c "apt-get install -y \
     intel-opencl-icd intel-level-zero-gpu level-zero \
     intel-media-va-driver-non-free libmfxgen1 libvpl2 \
