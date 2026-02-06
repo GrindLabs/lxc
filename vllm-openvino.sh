@@ -96,7 +96,7 @@ EOF"
   msg_info "Running GPU benchmark"
   pct exec "${CTID}" -- bash -c "git clone https://github.com/vllm-project/vllm.git /tmp/vllm && cd /tmp/vllm && \
     VLLM_OPENVINO_DEVICE=GPU VLLM_OPENVINO_KV_CACHE_PRECISION=i8 VLLM_OPENVINO_ENABLE_QUANTIZED_WEIGHTS=ON \
-    /opt/vllm-openvino/bin/python benchmarks/benchmark_throughput.py --model meta-llama/Llama-2-7b-chat-hf --dataset benchmarks/ShareGPT_V3_unfiltered_cleaned_split.json"
+    /opt/vllm-venv/bin/python benchmarks/benchmark_throughput.py --model meta-llama/Llama-2-7b-chat-hf --dataset benchmarks/ShareGPT_V3_unfiltered_cleaned_split.json"
   msg_ok "Ran GPU benchmark"
 
   msg_info "Enabling root console autologin"
