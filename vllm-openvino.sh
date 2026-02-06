@@ -20,6 +20,25 @@ variables
 color
 catch_errors
 
+function enable_autologin() {
+  msg_info "Enabling root console autologin"
+  pct exec "${CTID}" -- bash -c "passwd -d root >/dev/null 2>&1 || true"
+  pct exec "${CTID}" -- bash -c "mkdir -p /etc/systemd/system/getty@tty1.service.d"
+  pct exec "${CTID}" -- bash -c "cat <<'EOF' >/etc/systemd/system/getty@tty1.service.d/override.conf
+[Service]
+ExecStart=
+ExecStart=-/sbin/agetty --autologin root --noclear %I \$TERM
+EOF"
+  pct exec "${CTID}" -- bash -c "mkdir -p /etc/systemd/system/console-getty.service.d"
+  pct exec "${CTID}" -- bash -c "cat <<'EOF' >/etc/systemd/system/console-getty.service.d/override.conf
+[Service]
+ExecStart=
+ExecStart=-/sbin/agetty --autologin root --noclear --keep-baud 115200,38400,9600 %I \$TERM
+EOF"
+  pct exec "${CTID}" -- bash -c "systemctl daemon-reload && systemctl restart getty@tty1 console-getty"
+  msg_ok "Root console autologin enabled"
+}
+
 function install_vllm_openvino() {
   msg_info "Updating system packages"
   pct exec "${CTID}" -- bash -c "apt-get update -y"
@@ -102,16 +121,7 @@ EOF"
     --dataset-path /tmp/vllm/benchmarks/ShareGPT_V3_unfiltered_cleaned_split.json"
   msg_ok "Ran GPU benchmark"
 
-  msg_info "Enabling root console autologin"
-  pct exec "${CTID}" -- bash -c "passwd -d root >/dev/null 2>&1 || true"
-  pct exec "${CTID}" -- bash -c "mkdir -p /etc/systemd/system/getty@tty1.service.d"
-  pct exec "${CTID}" -- bash -c "cat <<'EOF' >/etc/systemd/system/getty@tty1.service.d/override.conf
-[Service]
-ExecStart=
-ExecStart=-/sbin/agetty --autologin root --noclear %I \$TERM
-EOF"
-  pct exec "${CTID}" -- bash -c "systemctl daemon-reload && systemctl restart getty@tty1"
-  msg_ok "Root console autologin enabled"
+  enable_autologin
 
   msg_ok "Installed vLLM OpenVINO"
 }
@@ -183,6 +193,7 @@ function update_script() {
   pct exec "${CTID}" -- bash -c "VLLM_TARGET_DEVICE=\"empty\" PIP_EXTRA_INDEX_URL=\"${PIP_EXTRA_INDEX_URL}\" /opt/vllm-venv/bin/python -m pip install -v ."
   pct exec "${CTID}" -- bash -c "/opt/vllm-venv/bin/python -m pip uninstall -y triton"
   msg_ok "Updated vLLM OpenVINO"
+  enable_autologin
   exit
 }
 
